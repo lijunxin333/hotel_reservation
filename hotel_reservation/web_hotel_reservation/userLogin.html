@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Login - Hotel Reservation System</title>
+    <style>
+        body {
+            background-image: url('images/比奇堡.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .login-container {
+            margin-top: 100px;
+            display: inline-block;
+            padding: 30px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+        }
+
+        .login-container input {
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .login-container button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>用户登录</h1>
+        <input type="text" id="userID" placeholder="输入 ID" /><br>
+        <input type="password" id="userPsw" placeholder="输入密码" /><br>
+        <button onclick="login()">登录</button>
+        <div class="error" id="errorMsg"></div>
+    </div>
+
+    <script>
+        async function login() {
+            const userID = document.getElementById("userID").value;
+            const userPsw = document.getElementById("userPsw").value;
+            const errorMsg = document.getElementById("errorMsg");
+            errorMsg.textContent = ""; // 清空错误信息
+
+            if (!userID || !userPsw) {
+                errorMsg.textContent = "请填写所有字段";
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8088/api/user/userLogin`, 
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ userID, userPsw })
+                });
+
+                if (response.ok) {
+                    // 登录成功
+                    localStorage.setItem("userId", userID); // 存储用户I
+                    window.location.href = "userPage.html"; // 登录成功，跳转到用户界面
+                } else if (response.status === 404) {
+                    // 账户不存在
+                    errorMsg.textContent = "账户不存在";
+                } else if (response.status === 401) {
+                    // 密码不正确
+                    errorMsg.textContent = "密码不正确";
+                } else {
+                    // 其他错误
+                    errorMsg.textContent = "登录错误，请稍后重试";
+                }
+            } catch (error) {
+                console.error("请求失败：", error);
+                errorMsg.textContent = "网络错误，请稍后重试";
+            }
+
+            // 清空输入框
+            document.getElementById("userID").value = "";
+            document.getElementById("userPsw").value = "";
+        }
+    </script>
+</body>
+</html>

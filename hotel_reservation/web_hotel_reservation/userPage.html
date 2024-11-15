@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Page - Hotel Reservation System</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-image: url('images/背景2.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            text-align: center;
+            height: 100vh;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            color: #FFD700;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 10px 0;
+            text-decoration: none;
+            margin: 10px 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+
+        table, th, td {
+            border: 1px solid white;
+            padding: 10px;
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        td {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .room-type {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .room-type div {
+            margin: 10px;
+            text-align: center;
+        }
+
+        .room-type img {
+            width: 300px;;
+            
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <h2>用户面板</h2>
+        <a href="#" onclick="showSection('welcome')">欢迎界面</a>
+        <a href="#" onclick="showSection('orders')">查看个人订单</a>
+        <a href="#" onclick="showSection('roomTypes')">查看房间类型</a>
+        <a href="#" onclick="showSection('reservations')">查看自己的房间预约</a>
+        <a href="#" onclick="showSection('reserveRoom')">预定房间</a>
+    </div>
+
+    <div class="content">
+        <!-- 欢迎界面 -->
+        <div id="welcome" class="section active">
+            <h1>欢迎您，用户 [用户名]</h1>
+            <p>这里是您的个人信息：</p>
+            <p id="userInfo"></p>
+        </div>
+
+        <!-- 查看个人订单界面 -->
+        <div id="orders" class="section">
+            <h2>您的个人订单</h2>
+            <table id="ordersTable">
+                <thead>
+                    <tr>
+                        <th>订单号</th>
+                        <th>房间号</th>
+                        <th>入住时间</th>
+                        <th>退房时间</th>
+                        <th>支付金额</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 订单数据将在这里填充动态显示 -->
+                </tbody>
+            </table>
+        </div>        
+
+        <!-- 查看房间类型界面 -->
+        <div id="roomTypes" class="section">
+            <h2>房间类型</h2>
+            <div class="room-type" id="roomTypesContainer">
+                <!-- 房间类型数据将在这里填充 -->
+            </div>
+        </div>
+        <!-- 查看个人房间预定 -->
+        <div id="reservations" class="section">
+            <h2>个人预约信息</h2>
+            <table id="reservationsTable">
+                <thead>
+                    <tr>
+                        <th>房间号</th>
+                        <th>预定开始日期</th>
+                        <th>预定截止日期</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 预定日期数据将在这里填充 -->
+                </tbody>
+            </table>
+        </div>
+        
+       <!-- 预定房间界面 -->
+       <div id="reserveRoom" class="section">
+        <h2>预定房间</h2>
+        <table id="availableRoomsTable">
+            <thead>
+                <tr>
+                    <th>房间类型</th>
+                    <th>剩余数量</th>
+                    <th>选择开始日期</th>
+                    <th>选择结束日期</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 可用房间数据将在这里填充 -->
+            </tbody>
+        </table>
+        <button onclick="reserveRoom()">确认预定</button>
+        <p id="totalPrice">总价: ¥0</p>
+    </div>
+
+
+    <script>
+       const userId = localStorage.getItem("userId");
+       window.onload = function() //页面加载后自动调用 fetchUserInfo 函数
+       {
+        fetchUserInfo();
+        fetchAvailableRooms();
+        };
+        function showSection(sectionId) {
+            // 隐藏所有部分
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            // 显示选定部分
+            document.getElementById(sectionId).classList.add('active');
+
+            // 根据部分 ID 调用相应的数据加载函数
+            if (sectionId === 'welcome') {
+                fetchUserInfo();
+            } else if (sectionId === 'orders') {
+                fetchOrders();
+            } else if (sectionId === 'roomTypes') {
+                fetchRoomTypes();
+            } else if (sectionId === 'reservations') 
+            {
+               fetchReservations();  // 调用新的函数
+          }
+             else if (sectionId === 'reserveRoom') {
+                fetchAvailableRooms();
+            }
+        }
+// 查看个人的信息
+        async function fetchUserInfo() {                          //动态插入
+            const response = await fetch(`http://localhost:8088/api/user/${userId}`);
+            if (response.ok) {
+                const userInfo = await response.json();
+                document.getElementById('userInfo').textContent = `用户名: ${userInfo.userName}, 电话: ${userInfo.userTel},身份证：${userInfo.userIdCard}`;
+            }
+        }
+       // 用户获取订单信息
+async function fetchOrders() {
+    const response = await fetch(`http://localhost:8088/api/orders/user/${userId}/orders`);
+    if (response.ok) {
+        const orders = await response.json();
+        const ordersTableBody = document.getElementById('ordersTable').querySelector('tbody');
+        ordersTableBody.innerHTML = ''; // 清空当前表格
+
+        orders.forEach(order => {
+            const row = `<tr>
+                <td>${order.orderNum}</td>
+                <td>${order.roomNum}</td>
+                <td>${order.checkInTime}</td>
+                <td>${order.checkOutTime}</td>
+                <td>${order.payment}</td>
+            </tr>`;
+            ordersTableBody.innerHTML += row;
+        });
+    } else {
+        console.error('Failed to fetch orders');
+    }
+}
+
+//查看房间的类型
+        async function fetchRoomTypes() {
+            const roomTypes = [
+                { type: "单人间", image: "images/单人间.jpg", price: 88 },
+                { type: "大床房", image: "images/大床房.jpg", price: 158 },
+                { type: "标准间（双人）", image: "images/标准间(双人).jpg", price: 188 },
+                { type: "套房", image: "images/套房.jpg", price: 388},
+                { type: "主题套房", image: "images/主题套房.jpg", price: 888}
+            ];
+
+            const roomTypesContainer = document.getElementById('roomTypesContainer');
+            roomTypesContainer.innerHTML = ''; // 清空当前内容
+
+            roomTypes.forEach(room => {
+                const roomDiv = `<div>
+                    <img src="${room.image}" alt="${room.type}">
+                    <p>${room.type} - ￥${room.price}</p>
+                </div>`;
+                roomTypesContainer.innerHTML += roomDiv;
+            });
+        }
+   // 获取用户的个人预定
+async function fetchReservations() {
+    const response = await fetch(`http://localhost:8088/api/reservations/user/${userId}`);
+    if (response.ok) {
+        const reservations = await response.json();
+        const today = new Date();
+        const reservationsTableBody = document.getElementById('reservationsTable').querySelector('tbody');
+        reservationsTableBody.innerHTML = ''; // 清空当前表格内容
+
+        reservations.forEach(reservation => {
+            const startDate = new Date(reservation.startDate);
+            const endDate = new Date(reservation.endDate);
+            let status = reservation.reservationStatus;
+
+            // 如果预约已过期则禁用取消按钮
+            const cancelButton =
+                startDate <= today && startDate.getHours() >= 12
+                    ? '<button disabled>已过期</button>'
+                    : `<button onclick="cancelReservation('${reservation.reservationId}')">取消</button>`;
+
+            reservationsTableBody.innerHTML += `
+                <tr>
+                    <td>${reservation.roomNum}</td>
+                    <td>${reservation.startDate}</td>
+                    <td>${reservation.endDate}</td>
+                    <td>${status}</td>
+                    <td>${cancelButton}</td>
+                </tr>
+            `;
+        });
+    } else {
+        console.error('Failed to fetch reservations');
+    }
+}
+
+// 用户取消预约功能
+async function cancelReservation(reservationId) {
+    const response = await fetch(`http://localhost:8088/api/reservations/${reservationId}/cancel`, { method: 'POST' });
+    if (response.ok) {
+        alert("预约已取消");
+        fetchReservations(); // 刷新预约列表
+    } else {
+        alert("取消预约失败");
+    }
+}
+
+        // 获取可用房间
+    async function fetchAvailableRooms() {
+    try {
+        const response = await fetch('http://localhost:8088/api/rooms/user/available');
+        if (response.ok) {
+            const rooms = await response.json();
+            renderAvailableRooms(rooms);
+        } else {
+            console.error('Failed to fetch available rooms');
+        }
+    } catch (error) {
+        console.error('网络错误:', error);
+    }
+}
+
+function renderAvailableRooms(rooms) {
+    const availableRoomsTableBody = document.getElementById('availableRoomsTable').querySelector('tbody');
+    availableRoomsTableBody.innerHTML = '';
+
+    rooms.forEach(room => {
+        const row = `<tr>
+            <td>${room.roomType}</td>
+            <td>${room.availableCount}</td>
+            <td><input type="date" id="startDate${room.roomType}" onchange="calculateTotalPrice()"></td>
+            <td><input type="date" id="endDate${room.roomType}" onchange="calculateTotalPrice()"></td>
+        </tr>`;
+        availableRoomsTableBody.innerHTML += row;
+    });
+}
+// 房间价格表
+const roomPrices = {
+    '单人间': 88,
+    '大床房': 158,
+    '标准间_双人': 188,
+    '套房': 388,
+    '主题套房': 888
+};
+
+   // 计算总价
+function calculateTotalPrice() {
+    let totalPrice = 0;
+    const startDateInputs = document.querySelectorAll('#availableRoomsTable input[type="date"][id^="startDate"]');
+    
+    startDateInputs.forEach(input => {
+        const roomType = input.id.replace('startDate', '');
+        const startDate = input.value;
+        const endDate = document.getElementById('endDate' + roomType).value;
+
+        if (startDate && endDate) {
+            const numDays = getNumDays(startDate, endDate);
+            if (numDays > 0) {
+                totalPrice += numDays * getRoomPrice(roomType);
+            }
+        }
+    });
+
+    document.getElementById('totalPrice').innerText = `总价: ¥${totalPrice}`;
+}
+
+// 获取房间价格
+function getRoomPrice(roomType) {
+    return roomPrices[roomType] || 0;
+}
+// 计算日期间隔天数
+function getNumDays(start, end) {
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    return (endDate - startDate) / (1000 * 3600 * 24);
+}
+// 确认预定
+async function reserveRoom() {
+    const reservationData = [];
+    const startDateInputs = document.querySelectorAll('#availableRoomsTable input[type="date"][id^="startDate"]');
+    
+    startDateInputs.forEach(input => {
+        const roomType = input.id.replace('startDate', '');
+        const startDate = input.value;
+        const endDate = document.getElementById('endDate' + roomType).value;
+
+        if (startDate && endDate && new Date(startDate) < new Date(endDate)) {
+            reservationData.push({
+                roomType,
+                startDate,
+                endDate
+            });
+        }
+    });
+
+    if (reservationData.length === 0) {
+        alert('请至少选择一个房间并填写有效日期');
+        return;
+    }
+
+    const orderData = {
+        userId,
+        rooms: reservationData,
+        totalPrice: parseFloat(document.getElementById('totalPrice').innerText.replace('总价: ¥', ''))
+    };
+
+    try {
+        const response = await fetch('http://localhost:8088/api/reservations/reserve', {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        if (response.ok) {
+            alert('预定成功！');
+            fetchAvailableRooms(); // 刷新可用房间
+        } else {
+            const errorMessage = await response.text();
+            console.error('预定失败:', errorMessage);
+            alert(`预定失败，请重试。错误信息：${errorMessage}`);
+        }
+    } catch (error) {
+        console.error('网络错误:', error);
+        alert('网络错误，请稍后再试！');
+    }
+}
+    </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - Hotel Reservation System</title>
+    <style>
+        body {
+            background-image: url('images/比奇堡.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .register-container {
+            margin-top: 70px;
+            display: inline-block;
+            padding: 30px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .register-container h1 {
+            margin-bottom: 20px;
+        }
+
+        .register-container input {
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .register-container button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .register-container button:hover {
+            background-color: red;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <h1>用户注册</h1>
+        <input type="text" id="userIdCard" placeholder="输入身份证" /><br>
+        <input type="password" id="userPsw" placeholder="输入密码" /><br>
+        <input type="text" id="userName" placeholder="输入用户名" /><br>
+        <input type="text" id="userTel" placeholder="输入手机号" />
+        <button onclick="register()">注册</button>
+        <div class="error" id="errorMsg"></div>
+    </div>
+
+    <script>
+        async function register() {
+            const userIdCard = document.getElementById("userIdCard").value;
+            const userPsw = document.getElementById("userPsw").value;
+            const userName = document.getElementById("userName").value;
+            const userTel = document.getElementById("userTel").value;
+            const errorMsg = document.getElementById("errorMsg");
+            errorMsg.textContent = ""; // 清空错误信息
+
+            if (!userIdCard || !userPsw || !userName || !userTel) {
+                errorMsg.textContent = "请填写所有字段";
+                return;
+            }
+
+            const response = await fetch(`http://localhost:8088/api/user/register`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(
+                    { 
+                    userIdCard: userIdCard, 
+                    userPsw: userPsw, 
+                    userName: userName, 
+                    userTel: userTel 
+                    })
+            }).catch(error => {
+               console.error("网络请求失败：", error);});
+            
+            if (response.ok) {
+                alert("注册成功，请登录！");
+                window.location.href = "userLogin.html"; // 注册成功后跳转到用户登录页面
+            } else {
+                errorMsg.textContent = "注册失败，请重试";
+                document.getElementById("userIdCard").value = "";
+                document.getElementById("userPsw").value = "";
+                document.getElementById("userName").value = "";
+                document.getElementById("userTel").value = ""; // 清空输入框
+            }
+        }
+    </script>
+</body>
+</html>

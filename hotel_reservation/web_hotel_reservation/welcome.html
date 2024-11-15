@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hotel Reservation System</title>
+    <style>
+        body {
+            background-image: url('images/比奇堡.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .navigation {
+            margin-top: 200px;
+        }
+
+        .navigation a {
+            color: pink;
+            text-decoration: none;
+            padding: 10px 20px;/*控制元素与边框的距离*/
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+            margin: 0 10px;/*控制元素与相邻元素距离，上下为0，左右为10px*/
+        }
+
+        .navigation a:hover {
+            background-color: rgba(0, 0, 0, 0.7);/*设置鼠标悬停时候的背景色*/
+        }
+    </style>
+</head>
+<body>
+    <h1>欢迎来到比奇堡</h1>
+    <p >请选择你的登录选项吧！</p>
+    <div class="navigation">
+        <a href="userLogin.html">用户登录</a>
+        <a href="adminLogin.html">管理员登录</a>
+        <a href="register.html">注册</a> <!-- 添加注册链接 -->
+    </div>
+</body>
+</html>

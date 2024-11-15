@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Page - Hotel Reservation System</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            color: white;
+            background-image: url('images/比奇堡.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .sidebar {
+            width: 200px;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            text-align: center;
+            height: 100vh;
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            color: #FFD700;
+        }
+
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 10px 0;
+            text-decoration: none;
+            margin: 10px 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 5px;
+        }
+
+        .sidebar a:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+/* 在查看其他部分的时候，隐藏不需要的部分 */
+        .section {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }/*使得表格靠紧*/
+
+        table, th, td {
+            border: 1px solid white;
+            padding: 10px;
+        }
+
+        th {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        td {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        button {
+            padding: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <h2>管理员面板</h2>
+    <a href="#" onclick="showSection('welcome')">欢迎界面</a>
+    <a href="#" onclick="showSection('orders')">查看订单</a>
+    <a href="#" onclick="showSection('rooms')">查看房间信息</a>
+</div>
+
+<div class="content">
+    <!-- 欢迎界面 -->
+     <!-- 多个类，active另一个类，控制元素的显示或者行为 -->
+    <div id="welcome" class="section active">
+        <!-- 不会换行，一行显示 -->
+        <h1>欢迎光临，管理员 <span id="adminName">[管理员姓名]</span></h1>
+        <p>职位：<span id="adminRole">[职位]</span></p>
+        <p>管理员ID：<span id="adminId">[用户ID]</span></p>
+        <p>在左侧选择一个选项以查看信息。</p>
+    </div>
+
+    <!-- 查看订单界面 -->
+    <div id="orders" class="section">
+        <h2>所有订单</h2>
+        <table id="ordersTable">
+            <thead>
+                <tr>
+                    <th>订单号</th>
+                    <th>用户ID</th>
+                    <th>预约ID</th>
+                    <th>房间号</th>
+                    <th>入住时间</th>
+                    <th>退房时间</th>
+                    <th>支付金额</th>
+                    <th>订单状态</th>
+                    <th>支付状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 订单数据将在这里填充 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 查看房间信息界面 -->
+    <div id="rooms" class="section">
+        <h2>房间状态</h2>
+        <table id="roomsTable">
+            <thead>
+                <tr>
+                    <th>房间号</th>
+                    <th>房间类型</th>
+                    <th>价格</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 房间数据将在这里填充 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    window.onload = function() //页面加载后自动调用 fetchUserInfo 函数
+       {
+            fetchAdminInfo();
+        };
+    // 切换页面显示
+    function showSection(sectionId) 
+    {
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+      if(sectionId==='welcome')
+      {
+        fetchAdminInfo();
+      }
+        else if (sectionId === 'orders') 
+        {
+            fetchOrders();
+        }
+         else if (sectionId === 'rooms') 
+         {
+            fetchRooms();
+        }
+    }
+    // 欢迎页面
+    async function fetchAdminInfo()
+     {
+        const adminId = localStorage.getItem("adminId");
+        if (!adminId) {
+        console.error("Admin ID is missing");
+        return;
+    }
+        try {
+            const response = await fetch(`http://localhost:8088/api/admin/${adminId}/profile`,
+            {
+            method:"GET",
+            headers:{
+                "Content-Type": "application/json"
+            }
+        });
+            if (response.ok) {
+                const adminData = await response.json();
+
+                // 更新页面中的管理员姓名、职位和用户ID
+                document.getElementById('adminName').textContent = adminData.adminName;
+                document.getElementById('adminRole').textContent = adminData.adminRole;
+                document.getElementById('adminId').textContent = adminData.adminId;
+            } 
+            else
+             {
+                console.error('Failed to fetch admin info');
+            }
+        } 
+        catch (error) 
+        {
+            console.error('Error fetching admin info:', error);
+        }
+    
+    }
+    // 获取所有订单
+    async function fetchOrders() {
+    try {
+        const response = await fetch('http://localhost:8088/api/orders/admin/orders');
+        if (response.ok) {
+            const orders = await response.json();
+            const ordersTableBody = document.getElementById('ordersTable').querySelector('tbody');
+            ordersTableBody.innerHTML = ''; // 清空表格内容
+
+            let rowsHTML = '';
+            orders.forEach(order => {
+                rowsHTML += `<tr>
+                    <td>${order.orderNum}</td>
+                    <td>${order.userID}</td>
+                    <td>${order.reservationID}</td>
+                    <td>${order.roomNum}</td>
+                    <td>${order.checkInTime}</td>
+                    <td>${order.checkOutTime}</td>
+                    <td>${order.payment}</td>
+                    <td>${order.orderStatus}</td>
+                    <td>${order.paymentStatus}</td>
+                   <td>
+    ${order.orderStatus === 'Pending' || order.orderStatus === 'Confirmed'? `<button onclick="confirmCheckIn(${order.orderNum})">确认入住</button>` : ''}
+    ${order.orderStatus === 'CheckedIn'|| order.orderStatus === 'Confirmed' ? `<button onclick="confirmCheckOut(${order.orderNum})">确认退房</button>` : ''}
+    ${order.paymentStatus === 'Unpaid' ? `<button onclick="markAsPaid(${order.orderNum})">标记为已支付</button>` : ''}
+    ${!order.roomNum ? `<button onclick="assignRoomToOrder(${order.orderNum})">分配房间</button>` : ''}
+                  </td>
+
+                </tr>`;
+            });
+
+            ordersTableBody.innerHTML = rowsHTML; // 将所有行一次性插入
+        } else {
+            console.error('Failed to fetch orders');
+        }
+    } catch (error) {
+        console.error('Error fetching orders:', error);
+    }
+}
+    // 获取房间信息
+    async function fetchRooms() {
+        const response = await fetch('http://localhost:8088/api/rooms/admin/rooms');
+        if (response.ok) {
+            const rooms = await response.json();
+            const roomsTableBody = document.getElementById('roomsTable').querySelector('tbody');
+            roomsTableBody.innerHTML = '';
+
+            rooms.forEach(room => {
+                const row = `<tr>
+                    <td>${room.roomNum}</td>
+                    <td>${room.roomType}</td>
+                    <td>${room.roomPrice}</td>
+                    <td>${room.roomStatus}</td> <!-- 显示当前的房间状态 -->
+                </tr>`;
+                roomsTableBody.innerHTML += row;
+            });
+        }
+    }
+
+    // 确认入住
+    async function confirmCheckIn(orderNum) {
+        const response = await fetch(`http://localhost:8088/api/admin/order/${orderNum}/checkin`,
+         { method: 'POST' });
+        if (response.ok) {
+            alert('入住确认成功');
+            fetchOrders(); // 刷新订单列表
+        }
+    }
+// 标记为已支付
+async function markAsPaid(orderNum) {
+        const response = await fetch(`http://localhost:8088/api/admin/order/${orderNum}/pay`, 
+        { method: 'POST' });
+        if (response.ok) {
+            alert('支付状态已更新');
+            fetchOrders(); // 刷新订单列表
+        }
+    }
+    // 确认退房
+    async function confirmCheckOut(orderNum) {
+        const response = await fetch(`http://localhost:8088/api/admin/order/${orderNum}/checkout`,
+         { method: 'POST' });
+        if (response.ok) {
+            alert('退房确认成功');
+            fetchOrders(); // 刷新订单列表
+        }
+    }
+    // 分配房间
+    async function assignRoomToOrder(orderNum) {
+    try {
+        // 获取空闲房间列表
+        const response = await fetch(`http://localhost:8088/api/rooms/admin/available`);
+        if (response.ok) {
+            const availableRooms = await response.json();
+
+            // 显示房间选择对话框
+            const roomNum = prompt(`请选择房间号:\n${availableRooms.map(room => room.roomNum).join(', ')}`);
+            if (!roomNum) return;
+
+            // 调用后端 API 将房间分配给订单
+            const assignResponse = await fetch(`http://localhost:8088/api/orders/admin/${orderNum}/assign-room`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roomNum: roomNum })
+            });
+
+            if (assignResponse.ok) {
+                alert(`房间 ${roomNum} 分配成功`);
+                fetchOrders(); // 刷新订单列表
+            } else {
+                alert('房间分配失败');
+            }
+        } else {
+            console.error('获取空闲房间列表失败');
+        }
+    } catch (error) {
+        console.error('Error assigning room:', error);
+    }
+}
+
+
+    // 初始化页面
+    fetchAdminInfo();
+    showSection('welcome');
+</script>
+</body>
+</html>

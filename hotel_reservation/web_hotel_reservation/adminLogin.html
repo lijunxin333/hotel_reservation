@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login - Hotel Reservation System</title>
+    <style>
+        body {
+            background-image: url('images/比奇堡.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            text-align: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .login-container {
+            margin-top: 100px;
+            display: inline-block;
+            padding: 30px;
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .login-container h1 {
+            margin-bottom: 20px;
+        }
+
+        .login-container input {
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .login-container button {
+            display: block;
+            width: 200px;
+            margin: 10px auto;
+            padding: 10px;
+            color: white;
+            background-color: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .login-container button:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>管理员登录</h1>
+        <input type="text" id="adminId" placeholder="输入管理员ID" /><br>
+        <input type="password" id="adminPsw" placeholder="输入密码" /><br>
+        <button onclick="adminLogin()">登录</button>
+        <div class="error" id="adminErrorMsg"></div>
+    </div>
+
+    <script>
+        async function adminLogin() {
+            const adminId = document.getElementById("adminId").value; // 将adminId转换为整数
+            const adminPsw = document.getElementById("adminPsw").value;
+            const adminErrorMsg = document.getElementById("adminErrorMsg");
+            adminErrorMsg.textContent = ""; // 清空错误信息
+
+            if (!adminId || !adminPsw) {
+                adminErrorMsg.textContent = "请填写所有字段";
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8088/api/admin/login`, 
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({adminId, adminPsw })
+                });
+
+                // 判断服务器响应
+                if (response.ok )
+                 {
+                localStorage.setItem("adminId", adminId);
+                  window.location.href = "adminPage.html"; // 登录成功，跳转到管理员界面
+                } else {
+                    const errorMessage = await response.text(); // 获取错误消息
+
+                    if (errorMessage === "密码不正确")
+                     {
+                        adminErrorMsg.textContent = "密码不正确，请重新输入。";
+                    } else if (errorMessage === "管理员ID不存在") 
+                    {
+                        adminErrorMsg.textContent = "没有找到该管理员ID，请检查后再试。";
+                    } else {
+                        adminErrorMsg.textContent = "登录失败，请重试。";
+                    }
+                    document.getElementById("adminId").value = "";
+                    document.getElementById("adminPsw").value = ""; // 清空输入框
+                }
+            } catch (error)
+             {
+                adminErrorMsg.textContent = "网络错误，请稍后再试。";
+                console.error("登录请求失败:", error);
+             // 打印具体的网络错误
+               if (error instanceof TypeError) 
+               {
+                  console.log("网络请求失败：", error.message);  // 如无法连接时的错误信息
+               } else {
+                console.log("未知错误：", error);
+                  }
+            }
+
+        }
+    </script>
+</body>
+</html>
